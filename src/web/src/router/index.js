@@ -49,7 +49,7 @@ function user(cognitoUser){
       }
       else
       {
-        return reject(false)
+        return resolve(false)
       }
     });
   })
