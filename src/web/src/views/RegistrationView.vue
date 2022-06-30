@@ -53,6 +53,7 @@ import { storeCognito } from '@/stores/store'
                         confirmCode:"",
 
                         store: storeCognito(),
+                        endpoint:import.meta.env.VITE_ENDPOINT,
 
                         postLogin: false,
                         canLogin: false
@@ -79,6 +80,16 @@ import { storeCognito } from '@/stores/store'
                         var cognitoUser = await this.SingUpPromise(userPool, attributeList);
 
                         this.store.setCognitoUser(cognitoUser);
+
+                        var data = {
+                            "username": this.username,
+                            "admin": false
+                        }
+
+                        this.$http.post(this.endpoint+'Users/', data )
+                            .then(function (rs) {
+                                console.log(rs);
+                        });
 
                         //show code confirm account
                         this.postLogin = true;

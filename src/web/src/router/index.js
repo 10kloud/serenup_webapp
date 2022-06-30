@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/LoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import RegistrationView from '../views/RegistrationView.vue'
+import AddBracialetView from '../views/AddBracialetView.vue'
+import AddContactView from '../views/AddContactView.vue'
 import { storeCognito } from '@/stores/store'
 
 const router = createRouter({
@@ -21,6 +23,16 @@ const router = createRouter({
       path: "/registration",
       name: "registration",
       component: RegistrationView
+    },
+    {
+      path: "/addbracialet",
+      name: "addbracialet",
+      component: AddBracialetView
+    },
+    {
+      path: "/addcontact",
+      name: "addcontact",
+      component: AddContactView
     }
   ]
 })
@@ -43,7 +55,7 @@ async function checkLogged(store){
 function user(cognitoUser){
   return new Promise((resolve, reject) => {
     cognitoUser.getSession(function(err, result) {
-      if (result.isValid())
+      if (result && result.isValid())
       {
         return resolve(true)
       }
@@ -60,17 +72,8 @@ router.beforeEach(async (to, from) => {
 
   var check = await checkLogged(store)
 
-  if(check == true)
-  {
-    console.log("logged");
-  }else
-  {
-    console.log("not logged");
-  }
-
   if(to.path === "/dashboard" && check == false)
   {
-    console.log("Not logged");
     router.push("/login")
   }else if((to.path === "/login" || to.path === "/registration") && check == true)
   {

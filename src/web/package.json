@@ -10,8 +10,11 @@
   "dependencies": {
     "amazon-cognito-identity-js": "^5.2.9",
     "aws-sdk": "^2.1156.0",
+    "axios": "^0.27.2",
     "pinia": "^2.0.14",
-    "vue": "^3.2.36",
+    "uuid": "^8.3.2",
+    "vue": "^3.2.37",
+    "vue-axios": "^3.4.1",
     "vue-cookies": "^1.8.1",
     "vue-router": "^4.0.15"
   },
