@@ -1,5 +1,8 @@
 <template>
     <div>
+        <!-- auto refresh api  -->
+        <input type="hidden" hidden :value="hide">
+
         <!-- barr -->
         <div class="container-fluid" style="position:absolute;">
             <button class="navbar-toggler m-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
@@ -10,24 +13,27 @@
                     <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Seren Up</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
+                <div class="offcanvas-header">
+                    <h1 class="offcanvas-title" id="offcanvasNavbarLabel">Welcome {{this.store.getCognitoUser.username}}👋</h1>
+                </div>
                 <div class="offcanvas-body">
                     <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
                         <li class="nav-item">
-                            <router-link to="/addbracialet" class="nav-link active" aria-current="page" href="#">Add bracelets</router-link>
-                            <router-link to="/addcontact" class="nav-link active" aria-current="page" href="#">Add contacts</router-link>
+                            <router-link to="/addcontact" class="nav-link active" aria-current="page" href="#">Managment contacts</router-link>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="listBracelet" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Bracelets
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="listBracelet">
-                            <li><a class="dropdown-item" href="#">ID 1</a></li>
-                            <li><a class="dropdown-item" href="#">ID 2</a></li>
+                            <li v-for="bracialet in listBracialets" :key="bracialet.idBracialet">
+                                <a @click="changeSelectBracialet(bracialet.idBracialet)" class="dropdown-item" href="#">{{bracialet.idBracialet}}</a>
+                            </li>
                             </ul>
                         </li>
                     </ul>
                     <div class="d-flex flex-row-reverse">
-                        <i @click="logout()" style="cursor: pointer;" class="bi bi-x-square-fill">Exit</i>
+                        <h1><i @click="logout()" style="cursor: pointer;" class="bi bi-door-open-fill"></i></h1>
                     </div>
                 </div>
             </div>
@@ -35,15 +41,7 @@
 
         <!-- basic element -->
         <div style="width: 70%; margin:auto; margin-top: 5px;">            
-            <div class="card d-flex justify-content-center align-items-center" style="width: 100%;">
-                <img class="m-1" src="/img/watch.png" style="width: 60px;"/>
-                <div class="card-body p-1">
-                    <div style="margin-top: 10px;">
-                        {{data.idbracialet}}
-                    </div>
-                </div>
-            </div>
-            <div class="d-flex mt-4 justify-content-between  align-items-center" style="height: 150px; ">
+            <div class="d-flex flex-wrap mt-4 justify-content-between  align-items-center">
                 <div class="information card d-flex justify-content-center align-items-center" style="width: 80px; padding: 1%;">
                     <img src="/img/temperature.png" style="width: 100%" />
                     <div class="card-body">
@@ -79,28 +77,39 @@
             </div>
         </div>
         <!-- seredepity -->
-        <div class="d-flex justify-content-around align-items-center" style="height: 400px; font-weight: bold;">
-            <div class="card p-5">
+        <div class="d-flex flex-wrap justify-content-around align-items-center" style="padding: 100px 0px; font-weight: bold;">
+            <!-- <div class="card p-5">
                 <div class="card-body">
                     <h1 class="card-title" style="font-weight: bold;">Quality Sleep</h1>
                     <p class="card-text">GOOD</p>
                 </div>
-            </div>
-            <div class="card p-5">
-                <div class="card-body">
-                    <h1 class="card-title" style="font-weight: bold;">Attention</h1>
-                    <p class="card-text">30 minutes every day</p>
+            </div> -->
+            <div class="card p-5 align-items-center" style="width: 90%">
+                <div class="card-body" style="width: 1000px">
+                    <h1 class="card-title" style="font-weight: bold;">Seredipity</h1>
+                    
+                    <dashboardHeart />
                 </div>
             </div>
-            <div class="card p-5">
+            <!-- <div class="card p-5">
                 <div class="card-body">
                     <h1 class="card-title" style="font-weight: bold;">QOL</h1>
                     <p class="card-text">Stress</p>
                 </div>
+            </div> -->
+        </div>
+        
+        <div class="d-flex justify-content-end" style="width:2000px; position: fixed; bottom: 0px; right: 0;">
+            <div class="card trasparent d-flex justify-content-center align-items-center" style="width: 25%;">
+                <img class="m-1" src="/img/watch.png" style="width: 60px;"/>
+                <div class="card-body p-1">
+                    <div style="margin-top: 10px;">
+                        {{selectBracialet}}
+                    </div>
+                </div>
             </div>
         </div>
         <!--<div style="width: 40%">
-            <dashboardHeart />
         </div>
         
         <div style="width: 40%">
@@ -121,8 +130,11 @@ import dashboardStepsComponent from '../components/dashboardStepsComponent.vue'
         data(){
             return{
                 store : storeCognito(),
-
-                data:null
+                listBracialets:[],
+                hide:"",
+                endpoint:import.meta.env.VITE_ENDPOINT,
+                data:null,
+                selectBracialet:null
             }
         },
         created(){
@@ -146,6 +158,31 @@ import dashboardStepsComponent from '../components/dashboardStepsComponent.vue'
                     "battery": 70,
                     "temperature":36
                 }
+            },
+            changeSelectBracialet(id){
+                this.selectBracialet = id;
+            }
+        },
+        watch:{
+            hide:{
+                handler(){
+                    //get api internal
+                    /*
+                    var user = this.store.getCognitoUser
+                    this.$http.get(this.endpoint+"Bracialet/All/"+user.username)
+                        .then(rs => {
+                        this.listBracialets = rs.data
+
+                        if(this.selectBracialet == null && this.listBracialets.length > 0){
+                            this.selectBracialet = this.listBracialets[0].idBracialet
+                        }
+                    });*/
+
+                    setTimeout(() => {
+                        this.hide = new Date();
+                    }, 3000);
+                },
+                immediate: true
             }
         }
     }
@@ -161,5 +198,8 @@ import dashboardStepsComponent from '../components/dashboardStepsComponent.vue'
 .information{
     border-radius: 10px;
     font-size: 30px;
+}
+.trasparent{
+    background-color: rgba(234, 242, 248, 0.3);
 }
 </style>

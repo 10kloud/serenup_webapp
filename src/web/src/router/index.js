@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/LoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import RegistrationView from '../views/RegistrationView.vue'
-import AddBracialetView from '../views/AddBracialetView.vue'
 import AddContactView from '../views/AddContactView.vue'
 import { storeCognito } from '@/stores/store'
 
@@ -12,27 +11,26 @@ const router = createRouter({
     {
       path: "/login",
       name: "login",
-      component: LoginView
+      component: LoginView,
+      requireAuth: false
     },
     {
       path: "/dashboard",
       name: "dashboard",
-      component: DashboardView
+      component: DashboardView,
+      requireAuth: true
     },
     {
       path: "/registration",
       name: "registration",
-      component: RegistrationView
-    },
-    {
-      path: "/addbracialet",
-      name: "addbracialet",
-      component: AddBracialetView
+      component: RegistrationView,
+      requireAuth: false
     },
     {
       path: "/addcontact",
       name: "addcontact",
-      component: AddContactView
+      component: AddContactView,
+      requireAuth: true
     }
   ]
 })
@@ -43,6 +41,9 @@ async function checkLogged(store){
   var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
   var cognitoUser = userPool.getCurrentUser();
   
+
+  console.log(cognitoUser);
+
   if(cognitoUser == null)
     return false
 
@@ -72,10 +73,12 @@ router.beforeEach(async (to, from) => {
 
   var check = await checkLogged(store)
 
-  if(to.path === "/dashboard" && check == false)
+  var routers = router.options.routes;
+
+  if(routers.map(e=> e.requireAuth == true && e.path === to.path).find(e => e == true) && check == false)
   {
     router.push("/login")
-  }else if((to.path === "/login" || to.path === "/registration") && check == true)
+  }else if(routers.map(e=> e.requireAuth == false && e.path === to.path).find(e => e == true) && check == true)
   {
     router.push("/dashboard")
   }else if(to.path === "/")

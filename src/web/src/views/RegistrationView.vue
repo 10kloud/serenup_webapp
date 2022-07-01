@@ -1,6 +1,40 @@
 <template>
-		<div class="container card" style="width: 70%; padding: 10px;">
-            <template v-if="postLogin == false">
+	<div class="container card" style="width: 70%; padding: 10px;">
+        <!-- part one -->
+        <template v-if="step == 1">
+            <div class="input-group">
+                <span class="input-group-text">First and last name</span>
+                <input v-model="name" type="text" aria-label="First name" class="form-control" maxlength="250">
+                <input v-model="lastname" type="text" aria-label="Last name" class="form-control" maxlength="250">
+            </div>
+            <div class="input-group">
+                <span class="input-group-text">Date of birth</span>
+                <input v-model="dateBirth" type="date" aria-label="First name" class="form-control">
+            </div>
+            <div class="input-group">
+                <span class="input-group-text">City</span>
+                <input v-model="city" type="text" aria-label="First name" class="form-control" maxlength="250">
+            </div>
+            <div class="input-group">
+                <span class="input-group-text">Country</span>
+                <input v-model="country" type="text" aria-label="First name" class="form-control" maxlength="250">
+            </div>
+            <div class="input-group">
+                <span class="input-group-text">Nationality</span>
+                <input v-model="nationality" type="text" aria-label="First name" class="form-control" maxlength="250">
+            </div>
+            <div class="input-group">
+                <span class="input-group-text">Telephone</span>
+                <input v-model="tel" type="tel" aria-label="First name" class="form-control" maxlength="10">
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <router-link to="/login" type="button" class="btn btn-secondary">Back to Login</router-link>
+                <button @click="next()" type="button" class="btn btn-primary">Next</button>
+            </div>
+        </template>
+        <!-- part two -->
+        <template v-else-if="step == 2">
                 <div class="input-group mb-3">
                     <span class="input-group-text" id="basic-addon1">@</span>
                     <input v-model="username" type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
@@ -19,26 +53,23 @@
                 <div class="input-group mb-3">
                     <span class="input-group-text" id="basic-addon1"><i class="bi bi-file-lock2"></i></span>
                     <input v-model="email" type="email" class="form-control" placeholder="Email" aria-label="Email" aria-describedby="basic-addon1">
-                </div>
+                </div>                
 
-                <template v-if="canLogin == true">
+                <div class="d-flex justify-content-between">
+                    <button @click="undo()" type="button" class="btn btn-secondary" >Back</button>
                     <button type="button" class="btn btn-primary" @click="SingUp()">Login</button>
-                </template>
-                <template v-else>
-                    <button type="button" class="btn btn-primary" disabled>Login</button>
-                    <router-link to="/login" type="button" class="btn btn-secondary">Back</router-link>
-                </template>
-            </template>
-            <template v-else>
-                <div class="input-group mb-3">
-                    <span class="input-group-text" id="basic-addon1"><i class="bi bi-file-lock2"></i></span>
-                    <input v-model="confirmCode" type="text" class="form-control" placeholder="Code confirm" aria-label="Number" aria-describedby="basic-addon1">
                 </div>
-                <button type="button" class="btn btn-secondary" @click="resendCode()">Resend code</button>
-                <button type="button" class="btn btn-primary" @click="confirmRegistration()">Confirm code</button>
-
-            </template>
-		</div>
+        </template>
+        <!-- part three -->
+        <template v-else-if="step == 3">
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon1"><i class="bi bi-file-lock2"></i></span>
+                <input v-model="confirmCode" type="text" class="form-control" placeholder="Code confirm" aria-label="Number" aria-describedby="basic-addon1">
+            </div>
+            <button type="button" class="btn btn-secondary" @click="resendCode()">Resend code</button>
+            <button type="button" class="btn btn-primary" @click="confirmRegistration()">Confirm code</button>
+        </template>
+	</div>
 </template>
 
 <script>
@@ -46,6 +77,14 @@ import { storeCognito } from '@/stores/store'
 		export default {
 				data(){
 					return{
+                        name:"",
+                        lastname:"",
+                        dateBirth:"",
+                        city:"",
+                        country:"",
+                        nationality:"",
+                        tel:"",
+
 						username:"",
 						password:"",
                         confirmPassword:"",
@@ -55,11 +94,17 @@ import { storeCognito } from '@/stores/store'
                         store: storeCognito(),
                         endpoint:import.meta.env.VITE_ENDPOINT,
 
-                        postLogin: false,
+                        step:1,
                         canLogin: false
 					}
 				},
 				methods:{
+                    next(){
+                        this.step++;
+                    },
+                    undo(){
+                        this.step--;
+                    },
 					async SingUp(){
                         //create poolData
                         var poolData = this.store.getPoolData;
@@ -83,16 +128,24 @@ import { storeCognito } from '@/stores/store'
 
                         var data = {
                             "username": this.username,
-                            "admin": false
+                            "name": this.username,
+                            "lastname": this.lastname,
+                            "dateOfBirth": new Date(this.dateBirth),
+                            "city": this.city,
+                            "country": this.country,
+                            "nationality": this.nationality,
+                            "mobilePhone": this.tel,
+                            "email": this.email,
+                            "profile": null
                         }
 
-                        this.$http.post(this.endpoint+'Users/', data )
+                        this.$http.post(this.endpoint+'UserRegistry', data )
                             .then(function (rs) {
                                 console.log(rs);
                         });
 
                         //show code confirm account
-                        this.postLogin = true;
+                        this.step++;
 					},
                     SingUpPromise(userPool, attributeList){
                         return new Promise((resolve, reject) => {
@@ -156,6 +209,8 @@ import { storeCognito } from '@/stores/store'
 		}
 </script>
 
-<style lang="scss" scoped>
-
+<style>
+.input-group{
+    margin: 5px;
+}
 </style>
