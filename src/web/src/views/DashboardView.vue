@@ -26,8 +26,8 @@
                                 Bracelets
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="listBracelet">
-                            <li v-for="bracialet in listBracialets" :key="bracialet.idBracialet">
-                                <a @click="changeSelectBracialet(bracialet.idBracialet)" class="dropdown-item" href="#">{{bracialet.idBracialet}}</a>
+                            <li v-for="bracialet in listBracialets" :key="bracialet.bracelet_id">
+                                <a @click="changeSelectBracialet(bracialet.bracelet_id)" class="dropdown-item" href="#">{{bracialet.bracelet_id}}</a>
                             </li>
                             </ul>
                         </li>
@@ -42,7 +42,7 @@
         <!-- basic element -->
         <div style="width: 70%; margin:auto; margin-top: 5px;">            
             <div class="d-flex flex-wrap mt-4 justify-content-between  align-items-center">
-                <div class="information card d-flex justify-content-center align-items-center" style="width: 80px; padding: 1%;">
+                <div class="information card d-flex justify-content-center align-items-center" style="width: 80px;">
                     <img src="/img/temperature.png" style="width: 100%" />
                     <div class="card-body">
                         <div style="margin-top: 10px;">
@@ -50,10 +50,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="information card d-flex justify-content-center align-items-center" style="width: 80px; padding: 1%;">
+                <div class="information card d-flex justify-content-center align-items-center" style="width: 80px;">
                     <img src="/img/speed.png" style="width: 100%" />
                     <div class="card-body">
-                        <div style="margin-top: 10px;">
+                        <div>
                             {{data.velocity}}
                         </div>
                     </div>
@@ -61,7 +61,7 @@
                 <div class="information card d-flex justify-content-center align-items-center" style="width: 80px; padding: 1%;">
                     <img src="/img/steps.png" style="width: 100%" />
                     <div class="card-body">
-                        <div style="margin-top: 10px;">
+                        <div>
                             {{data.steps}}
                         </div>
                     </div>
@@ -69,8 +69,8 @@
                 <div class="information card d-flex justify-content-center align-items-center" style="width: 80px; padding: 1%;">
                     <img src="/img/battery.png" style="width: 100%" />
                     <div class="card-body">
-                        <div style="margin-top: 10px;">
-                            {{data.battery}}
+                        <div>
+                            {{battery}}
                         </div>
                     </div>
                 </div>
@@ -84,11 +84,12 @@
                     <p class="card-text">GOOD</p>
                 </div>
             </div> -->
-            <div class="card p-5 align-items-center" style="width: 90%">
-                <div class="card-body" style="width: 1000px">
-                    <h1 class="card-title" style="font-weight: bold;">Seredipity</h1>
-                    
-                    <dashboardHeart />
+            <div class="card p-5" style="width: 90%">
+                <div class="card-body">
+                    <h2 class="card-title">Seredipity</h2>
+                    <div class="d-flex justify-content-center" v-if="this.seredipity != undefined">
+                        <pharse :lastData="this.seredipity.measure_value" />
+                    </div>
                 </div>
             </div>
             <!-- <div class="card p-5">
@@ -120,12 +121,10 @@
 
 <script>
 import { storeCognito } from '@/stores/store'
-import dashboardHeartComponent from '../components/dashboardHeartComponent.vue'
-import dashboardStepsComponent from '../components/dashboardStepsComponent.vue'
+import pharseComponent from '../components/pharseComponent.vue'
     export default {
         components:{
-            dashboardHeart : dashboardHeartComponent,
-            dashboardSteps: dashboardStepsComponent
+            pharse : pharseComponent,
         },
         data(){
             return{
@@ -134,7 +133,10 @@ import dashboardStepsComponent from '../components/dashboardStepsComponent.vue'
                 hide:"",
                 endpoint:import.meta.env.VITE_ENDPOINT,
                 data:null,
-                selectBracialet:null
+                selectBracialet:null,
+
+                seredipity:null,
+                battery:null
             }
         },
         created(){
@@ -167,16 +169,29 @@ import dashboardStepsComponent from '../components/dashboardStepsComponent.vue'
             hide:{
                 handler(){
                     //get api internal
-                    /*
                     var user = this.store.getCognitoUser
-                    this.$http.get(this.endpoint+"Bracialet/All/"+user.username)
+                    var customer_id = user.signInUserSession.idToken.payload.sub
+                    this.$http.get(this.endpoint+"Prod/users/"+customer_id+"/bracelets")
                         .then(rs => {
-                        this.listBracialets = rs.data
+                        this.listBracialets = rs.data[0].data
 
                         if(this.selectBracialet == null && this.listBracialets.length > 0){
-                            this.selectBracialet = this.listBracialets[0].idBracialet
+                            this.selectBracialet = this.listBracialets[0].bracelet_id
                         }
-                    });*/
+                    });
+
+                    if(this.selectBracialet != null)
+                    {
+                        this.$http.get(this.endpoint+"Prod/bracelets/"+this.selectBracialet+"?from=1m&metric=serendipity")
+                        .then(rs => {
+                            this.seredipity = rs.data[0].data[rs.data[0].data.length - 1]
+                        });
+
+                        this.$http.get(this.endpoint+"Prod/bracelets/"+this.selectBracialet+"?from=1m&metric=battery_level")
+                        .then(rs => {
+                            this.battery = Math.round(rs.data[0].data[rs.data[0].data.length - 1].measure_value)
+                        });
+                    }
 
                     setTimeout(() => {
                         this.hide = new Date();
