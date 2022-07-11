@@ -171,7 +171,7 @@ import pharseComponent from '../components/pharseComponent.vue'
                     //get api internal
                     var user = this.store.getCognitoUser
                     var customer_id = user.signInUserSession.idToken.payload.sub
-                    this.$http.get(this.endpoint+"Prod/users/"+customer_id+"/bracelets")
+                    this.$http.get(this.endpoint+"users/"+customer_id+"/bracelets")
                         .then(rs => {
                         this.listBracialets = rs.data[0].data
 
@@ -182,12 +182,12 @@ import pharseComponent from '../components/pharseComponent.vue'
 
                     if(this.selectBracialet != null)
                     {
-                        this.$http.get(this.endpoint+"Prod/bracelets/"+this.selectBracialet+"?from=1m&metric=serendipity")
+                        this.$http.get(this.endpoint+"bracelets/"+this.selectBracialet+"?from=1m&metric=serendipity")
                         .then(rs => {
                             this.seredipity = rs.data[0].data[rs.data[0].data.length - 1]
                         });
 
-                        this.$http.get(this.endpoint+"Prod/bracelets/"+this.selectBracialet+"?from=1m&metric=battery_level")
+                        this.$http.get(this.endpoint+"bracelets/"+this.selectBracialet+"?from=1m&metric=battery_level")
                         .then(rs => {
                             this.battery = Math.round(rs.data[0].data[rs.data[0].data.length - 1].measure_value)
                         });

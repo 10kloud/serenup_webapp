@@ -5,16 +5,34 @@
         <div class="d-flex justify-content-center">
             <div class="card" style="width: 60%; padding: 20px; margin-top: 20px;">
                 <div class="input-group mb-3">
-                    <span class="input-group-text" id="basic-addon1">Name Contact</span>
-                    <input v-model="nameContact" type="text" class="form-control" placeholder="Jerry" aria-label="IdBracelet" aria-describedby="basic-addon1">
+                    <span class="input-group-text" id="basic-addon1">Protocol:</span>
+                    <select v-model="protocol" name="protocol" id="protocol" class="form-select">
+                        <option value="email">Email</option>
+                        <option value="sms">Number Phone</option>
+                    </select>
                 </div>
                 <div class="input-group mb-3">
-                    <span class="input-group-text" id="basic-addon1">Number Phone</span>
-                    <input v-model="phone" type="tel" maxlength="10" class="form-control" placeholder="8530230021" aria-label="tel" aria-describedby="basic-addon1">
+                    <template v-if="protocol === 'sms'">
+                        <span class="input-group-text" id="basic-addon1">Number Phone</span>
+                        <input v-model="endpoint_contacts" type="number" maxlength="10" class="form-control" placeholder="8530230021" aria-label="tel" aria-describedby="basic-addon1">
+                    </template>
+                    <template v-else-if="protocol === 'email'">
+                        <span class="input-group-text" id="basic-addon1">Email</span>
+                        <input v-model="endpoint_contacts" type="email" class="form-control" placeholder="example@domain.com" aria-label="tel" aria-describedby="basic-addon1">
+                    </template>
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="basic-addon1">Contact Category</span>
+                    <select v-model="category" name="category" id="category" class="form-select md-selected">
+                        <option value="notifications" selected>Notifications</option>
+                        <option value="trusted_contact">Trusted Contact</option>
+                    </select>
                 </div>
                 <div class="d-flex justify-content-between">
                     <router-link to="/dashboard" type="button" class="btn btn-secondary">Torna indietro</router-link>
-                    <button @click="confirm()" type="button" class="btn btn-primary">Conferma</button>
+                    <template v-if="protocol.length > 0">
+                        <button @click="confirm()" type="button" class="btn btn-primary">Conferma</button>
+                    </template>
                 </div>
             </div>
         </div>
@@ -50,8 +68,9 @@ import { storeCognito } from '@/stores/store'
     export default {
         data(){
             return{
-                nameContact:"",
-                phone:"",
+                protocol:"",
+                category:"notifications",
+                endpoint_contacts:"",
                 store: storeCognito(),
                 endpoint:import.meta.env.VITE_ENDPOINT,
                 hide:"",
@@ -63,16 +82,17 @@ import { storeCognito } from '@/stores/store'
             async confirm(){                
                 
                 var user = this.store.getCognitoUser
+                var customer_id = user.signInUserSession.idToken.payload.sub
 
                 var data = {
-                    "username": user.username,
-                    "contactname": this.nameContact,
-                    "number": this.phone
+                    "endpoint": this.endpoint_contacts,
+                    "protocol": this.protocol,
+                    "category": this.category
                 }
 
                 console.log(data);
 
-                var rs = await this.$http.post(this.endpoint+"Contacts", data);
+                var rs = await this.$http.post(`${this.endpoint}users/${customer_id}/contacts`, JSON.stringify(data));
                 console.log(rs);
             },
             async deleteContact(id){
