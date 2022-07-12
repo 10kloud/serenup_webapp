@@ -40,22 +40,21 @@
         <div style="width:600px; margin:auto;">
             <div v-for="contact in listContacts" :key="contact">
                 <div class="card m-2">
-                    <div class="card-body d-flex justify-content-around">
+                    <div class="card-body">
                         <div class="p-2">
-                            Name Contact:
+                            Protocol: {{contact.protocol}}
                         </div>
                         <div class="p-2">
-                            {{contact.contactname}}
+                            Endpoint: {{contact.endpoint}}
                         </div>
                         <div class="p-2">
-                            Number Phone:
+                            Status: {{contact.status}}
                         </div>
-                        <div class="p-2">
-                            {{contact.number}}
-                        </div>
-                        <div class="p-2">
-                            <button @click="deleteContact(contact.id)" class="btn btn-danger"><i class="bi bi-trash3"></i></button>
-                        </div>
+                        <template v-if="contact.status === 'Confirmed'">
+                            <div class="d-grid">
+                                <button @click="deleteContact(contact)" class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -95,23 +94,50 @@ import { storeCognito } from '@/stores/store'
                 var rs = await this.$http.post(`${this.endpoint}users/${customer_id}/contacts`, JSON.stringify(data));
                 console.log(rs);
             },
-            async deleteContact(id){
-                await this.$http.delete(this.endpoint+"Contacts/"+id);
+            async deleteContact(contact){
+
+                var data = {
+                    "endpoint":contact.endpoint,
+                    "category":contact.category
+                }
+
+                console.log(data);
+                var json = JSON.stringify(data)
+                var user = this.store.getCognitoUser
+                var customer_id = user.signInUserSession.idToken.payload.sub
+                this.$http.delete(this.endpoint+"users/"+customer_id+"/contacts", { data:  data })
+                    .catch(error => {console.log(error)});
             }
         },
         watch:{
             hide:{
                 handler(){
                     var user = this.store.getCognitoUser
+                    var customer_id = user.signInUserSession.idToken.payload.sub
+                    this.listContacts = []
                     //get api internal
-                    this.$http.get(this.endpoint+"Contacts/All/"+user.username)
+                    this.$http.get(this.endpoint+"users/"+customer_id+"/contacts?category=notifications")
                         .then(rs => {
-                        this.listContacts = rs.data
+                        if(rs.data.length > 0)
+                            rs.data.forEach(element => {
+                                element.category = "notifications"
+                                this.listContacts.push(element)
+                            });
+                    });
+
+                    //get api internal
+                    this.$http.get(this.endpoint+"users/"+customer_id+"/contacts?category=trusted_contact")
+                        .then(rs => {
+                        if(rs.data.length > 0)
+                            rs.data.forEach(element => {
+                                element.category = "trusted_contact"
+                                this.listContacts.push(element)
+                            });
                     });
 
                     setTimeout(() => {
                         this.hide = new Date();
-                    }, 3000);
+                    }, 30000);
                 },
                 immediate: true
             }
