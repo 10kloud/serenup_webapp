@@ -42,7 +42,7 @@
         <!-- basic element -->
         <div style="width: 70%; margin:auto; margin-top: 5px;">            
             <div class="d-flex flex-wrap mt-4 justify-content-between align-items-center">
-                <div class="information card d-flex justify-content-center align-items-center" style="padding: 1%;" :style="statusBattery">
+                <div class="information card d-flex justify-content-center align-items-center" style="padding: 1%;">
                     <div class="card-body">
                         <div>
                             <chart :data="balance"/>

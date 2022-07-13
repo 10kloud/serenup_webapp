@@ -89,10 +89,12 @@ import { storeCognito } from '@/stores/store'
                     "category": this.category
                 }
 
-                console.log(data);
-
                 var rs = await this.$http.post(`${this.endpoint}users/${customer_id}/contacts`, JSON.stringify(data));
-                console.log(rs);
+                if(rs.status == 200)
+                {
+                    this.protocol = ""
+                    this.endpoint_contacts = ""
+                }
             },
             async deleteContact(contact){
 
