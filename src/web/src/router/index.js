@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/LoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import RegistrationView from '../views/RegistrationView.vue'
+import AddContactView from '../views/AddContactView.vue'
 import { storeCognito } from '@/stores/store'
 
 const router = createRouter({
@@ -10,17 +11,26 @@ const router = createRouter({
     {
       path: "/login",
       name: "login",
-      component: LoginView
+      component: LoginView,
+      requireAuth: false
     },
     {
       path: "/dashboard",
       name: "dashboard",
-      component: DashboardView
+      component: DashboardView,
+      requireAuth: true
     },
     {
       path: "/registration",
       name: "registration",
-      component: RegistrationView
+      component: RegistrationView,
+      requireAuth: false
+    },
+    {
+      path: "/addcontact",
+      name: "addcontact",
+      component: AddContactView,
+      requireAuth: true
     }
   ]
 })
@@ -30,7 +40,7 @@ async function checkLogged(store){
   var poolData = store.getPoolData
   var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
   var cognitoUser = userPool.getCurrentUser();
-  
+
   if(cognitoUser == null)
     return false
 
@@ -43,13 +53,13 @@ async function checkLogged(store){
 function user(cognitoUser){
   return new Promise((resolve, reject) => {
     cognitoUser.getSession(function(err, result) {
-      if (result.isValid())
+      if (result && result.isValid())
       {
         return resolve(true)
       }
       else
       {
-        return reject(false)
+        return resolve(false)
       }
     });
   })
@@ -60,19 +70,12 @@ router.beforeEach(async (to, from) => {
 
   var check = await checkLogged(store)
 
-  if(check == true)
-  {
-    console.log("logged");
-  }else
-  {
-    console.log("not logged");
-  }
+  var routers = router.options.routes;
 
-  if(to.path === "/dashboard" && check == false)
+  if(routers.map(e=> e.requireAuth == true && e.path === to.path).find(e => e == true) && check == false)
   {
-    console.log("Not logged");
     router.push("/login")
-  }else if((to.path === "/login" || to.path === "/registration") && check == true)
+  }else if(routers.map(e=> e.requireAuth == false && e.path === to.path).find(e => e == true) && check == true)
   {
     router.push("/dashboard")
   }else if(to.path === "/")

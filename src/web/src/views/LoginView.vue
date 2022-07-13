@@ -1,5 +1,8 @@
 <template>
-    <div class="container card" style="width: 70%; padding: 10px;">
+    <div class="container card" style="width: 70%; padding: 20px; margin-top: 100px;">
+        <div style="margin: auto; padding: 10px;">
+            <h1><b>Login</b></h1>
+        </div>
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">@</span>
             <input v-model="username" type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
