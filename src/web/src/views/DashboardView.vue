@@ -3,7 +3,7 @@
         <!-- auto refresh api  -->
         <input type="hidden" hidden :value="hide">
 
-        <!-- barr -->
+        <!-- bar -->
         <div class="container-fluid" style="position:absolute;">
             <button class="navbar-toggler m-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
                 <i class="bi bi-list" style="font-size: 40px;"></i>
@@ -19,7 +19,7 @@
                 <div class="offcanvas-body">
                     <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
                         <li class="nav-item">
-                            <router-link to="/addcontact" class="nav-link active" aria-current="page" href="#">Managment contacts</router-link>
+                            <a href="/addcontact" class="nav-link active" aria-current="page">Managment contacts</a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="listBracelet" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -41,32 +41,8 @@
 
         <!-- basic element -->
         <div style="width: 70%; margin:auto; margin-top: 5px;">            
-            <div class="d-flex flex-wrap mt-4 justify-content-between  align-items-center">
-                <div class="information card d-flex justify-content-center align-items-center" style="width: 80px;">
-                    <img src="/img/temperature.png" style="width: 100%" />
-                    <div class="card-body">
-                        <div style="margin-top: 10px;">
-                            {{data.temperature}}
-                        </div>
-                    </div>
-                </div>
-                <div class="information card d-flex justify-content-center align-items-center" style="width: 80px;">
-                    <img src="/img/speed.png" style="width: 100%" />
-                    <div class="card-body">
-                        <div>
-                            {{data.velocity}}
-                        </div>
-                    </div>
-                </div>
-                <div class="information card d-flex justify-content-center align-items-center" style="width: 80px; padding: 1%;">
-                    <img src="/img/steps.png" style="width: 100%" />
-                    <div class="card-body">
-                        <div>
-                            {{data.steps}}
-                        </div>
-                    </div>
-                </div>
-                <div class="information card d-flex justify-content-center align-items-center" style="width: 80px; padding: 1%;">
+            <div class="d-flex flex-wrap mt-4 justify-content-center  align-items-center">
+                <div class="information card d-flex justify-content-center align-items-center" style="width: 80px; padding: 1%;" :style="statusBattery">
                     <img src="/img/battery.png" style="width: 100%" />
                     <div class="card-body">
                         <div>
@@ -76,31 +52,14 @@
                 </div>
             </div>
         </div>
-        <!-- seredepity -->
-        <div class="d-flex flex-wrap justify-content-around align-items-center" style="padding: 100px 0px; font-weight: bold;">
-            <!-- <div class="card p-5">
-                <div class="card-body">
-                    <h1 class="card-title" style="font-weight: bold;">Quality Sleep</h1>
-                    <p class="card-text">GOOD</p>
-                </div>
-            </div> -->
-            <div class="card p-5" style="width: 90%">
-                <div class="card-body">
-                    <h2 class="card-title">Seredipity</h2>
-                    <div class="d-flex justify-content-center" v-if="this.seredipity != undefined">
-                        <pharse :lastData="this.seredipity.measure_value" />
-                    </div>
-                </div>
-            </div>
-            <!-- <div class="card p-5">
-                <div class="card-body">
-                    <h1 class="card-title" style="font-weight: bold;">QOL</h1>
-                    <p class="card-text">Stress</p>
-                </div>
-            </div> -->
-        </div>
+
+        <!-- seredepity -->        
+        <template v-if="this.seredipity != undefined">
+            <pharse :lastData="this.seredipity.measure_value" />
+        </template>
         
-        <div class="d-flex justify-content-end" style="width:2000px; position: fixed; bottom: 0px; right: 0;">
+        <!-- selected attual bracialet --> 
+        <div class="d-flex justify-content-end" style="width:2000px; position: fixed; bottom: 0px; right: 0; margin: 10px;">
             <div class="card trasparent d-flex justify-content-center align-items-center" style="width: 25%;">
                 <img class="m-1" src="/img/watch.png" style="width: 60px;"/>
                 <div class="card-body p-1">
@@ -136,7 +95,8 @@ import pharseComponent from '../components/pharseComponent.vue'
                 selectBracialet:null,
 
                 seredipity:null,
-                battery:null
+                battery:null,
+                statusBattery:"background-color: gray;"
             }
         },
         created(){
@@ -173,10 +133,13 @@ import pharseComponent from '../components/pharseComponent.vue'
                     var customer_id = user.signInUserSession.idToken.payload.sub
                     this.$http.get(this.endpoint+"users/"+customer_id+"/bracelets")
                         .then(rs => {
-                        this.listBracialets = rs.data[0].data
+                        if(rs.data)
+                        {
+                            this.listBracialets = rs.data.data
 
-                        if(this.selectBracialet == null && this.listBracialets.length > 0){
-                            this.selectBracialet = this.listBracialets[0].bracelet_id
+                            if(this.selectBracialet == null && this.listBracialets.length > 0){
+                                this.selectBracialet = this.listBracialets[0].bracelet_id
+                            }
                         }
                     });
 
@@ -184,18 +147,30 @@ import pharseComponent from '../components/pharseComponent.vue'
                     {
                         this.$http.get(this.endpoint+"bracelets/"+this.selectBracialet+"?from=1m&metric=serendipity")
                         .then(rs => {
-                            this.seredipity = rs.data[0].data[rs.data[0].data.length - 1]
+                            this.seredipity = rs.data.data[rs.data.data.length - 1]
                         });
 
                         this.$http.get(this.endpoint+"bracelets/"+this.selectBracialet+"?from=1m&metric=battery_level")
                         .then(rs => {
-                            this.battery = Math.round(rs.data[0].data[rs.data[0].data.length - 1].measure_value)
+                            this.battery = Math.round(rs.data.data[rs.data.data.length - 1].measure_value)
+
+                            if(this.battery < 10)
+                            {
+                                this.statusBattery = "background-color: rgb(255, 97, 97);"
+                            }else if(this.battery >= 10 && this.battery < 20)
+                            {
+                                this.statusBattery = "background-color: rgb(255, 210, 97);"
+                            }else
+                            {
+                                this.statusBattery = "background-color: rgb(115, 255, 134 );"
+                            }
+
                         });
                     }
 
                     setTimeout(() => {
                         this.hide = new Date();
-                    }, 3000);
+                    }, 5000);
                 },
                 immediate: true
             }

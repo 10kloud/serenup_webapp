@@ -37,7 +37,7 @@
             </div>
         </div>
 
-        <div style="width:600px; margin:auto;">
+        <div style="width:600px; margin:auto; height: 30px;">
             <div v-for="contact in listContacts" :key="contact">
                 <div class="card m-2">
                     <div class="card-body">
