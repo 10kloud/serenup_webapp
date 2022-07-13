@@ -41,7 +41,14 @@
 
         <!-- basic element -->
         <div style="width: 70%; margin:auto; margin-top: 5px;">            
-            <div class="d-flex flex-wrap mt-4 justify-content-center  align-items-center">
+            <div class="d-flex flex-wrap mt-4 justify-content-between align-items-center">
+                <div class="information card d-flex justify-content-center align-items-center" style="padding: 1%;" :style="statusBattery">
+                    <div class="card-body">
+                        <div>
+                            <chart :data="balance"/>
+                        </div>
+                    </div>
+                </div>
                 <div class="information card d-flex justify-content-center align-items-center" style="width: 80px; padding: 1%;" :style="statusBattery">
                     <img src="/img/battery.png" style="width: 100%" />
                     <div class="card-body">
@@ -81,9 +88,11 @@
 <script>
 import { storeCognito } from '@/stores/store'
 import pharseComponent from '../components/pharseComponent.vue'
+import serendipityChartVue from '../components/serendipityChart.vue'
     export default {
         components:{
             pharse : pharseComponent,
+            chart: serendipityChartVue
         },
         data(){
             return{
@@ -96,6 +105,7 @@ import pharseComponent from '../components/pharseComponent.vue'
 
                 seredipity:null,
                 battery:null,
+                balance:null,
                 statusBattery:"background-color: gray;"
             }
         },
@@ -145,6 +155,11 @@ import pharseComponent from '../components/pharseComponent.vue'
 
                     if(this.selectBracialet != null)
                     {
+                        this.$http.get(this.endpoint+"bracelets/"+this.selectBracialet+"?from=1m&metric=balance")
+                        .then(rs => {
+                            this.balance = rs.data.data
+                        });
+
                         this.$http.get(this.endpoint+"bracelets/"+this.selectBracialet+"?from=1m&metric=serendipity")
                         .then(rs => {
                             this.seredipity = rs.data.data[rs.data.data.length - 1]
