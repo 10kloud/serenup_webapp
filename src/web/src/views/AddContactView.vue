@@ -42,6 +42,9 @@
                 <div class="card m-2">
                     <div class="card-body">
                         <div class="p-2">
+                            Contact Category: {{contact.category}}
+                        </div>
+                        <div class="p-2">
                             Protocol: {{contact.protocol}}
                         </div>
                         <div class="p-2">
